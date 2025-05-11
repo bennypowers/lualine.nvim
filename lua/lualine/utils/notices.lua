@@ -6,6 +6,18 @@ local M = {}
 local notices = {}
 local persistent_notices = {}
 
+local flatten = (function()
+  if vim.fn.has "nvim-0.11" == 1 then
+    return function(t)
+      return vim.iter(t):flatten():totable()
+    end
+  else
+    return function(t)
+      return vim.tbl_flatten(t)
+    end
+  end
+end)()
+
 ---append new notice
 ---@param notice string|table table is a list of strings
 function M.add_notice(notice)
@@ -74,8 +86,8 @@ function M.show_notices()
     vim.cmd('normal q')
     return
   end
-  local notice = vim.tbl_flatten(persistent_notices)
-  notice = vim.list_extend(notice, vim.tbl_flatten(notices))
+  local notice = flatten(persistent_notices)
+  notice = vim.list_extend(notice, flatten(notices))
   vim.fn.appendbufline(bufnr, 0, notice)
 
   vim.fn.deletebufline(bufnr, #notice, vim.fn.line('$'))
